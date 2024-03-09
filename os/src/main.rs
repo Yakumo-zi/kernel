@@ -4,26 +4,23 @@
 
 #[macro_use]
 mod console;
+mod batch;
 mod lang_items;
 mod logger;
 mod sbi;
+mod sync;
+mod syscall;
+mod trap;
 
 use core::{arch::global_asm, usize};
 
 use crate::logger::Logger;
 
 global_asm!(include_str!("entry.asm"));
+global_asm!(include_str!("link_app.S"));
 
 #[no_mangle]
 pub fn rust_main() -> ! {
-    log::set_logger(&Logger)
-        .map(|()| log::set_max_level(log::LevelFilter::Trace))
-        .unwrap();
-    clear_bss();
-    panic!("Shutdown machine")
-}
-
-fn clear_bss() {
     extern "C" {
         fn sbss();
         fn ebss();
@@ -36,6 +33,10 @@ fn clear_bss() {
         fn skernel();
         fn ekernel();
     }
+    log::set_logger(&Logger)
+        .map(|()| log::set_max_level(log::LevelFilter::Trace))
+        .unwrap();
+
     log::info!(".bss [{:#x}-{:#x}]", sbss as usize, ebss as usize);
     log::info!(".text [{:#x}-{:#x}]", stext as usize, etext as usize);
     log::info!(".data [{:#x}-{:#x}]", sdata as usize, edata as usize);
@@ -45,5 +46,16 @@ fn clear_bss() {
         skernel as usize,
         ekernel as usize,
     );
+    clear_bss();
+    trap::init();
+    batch::init();
+    batch::run_next_app();
+}
+
+fn clear_bss() {
+    extern "C" {
+        fn sbss();
+        fn ebss();
+    }
     (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
 }
