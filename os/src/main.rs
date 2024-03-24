@@ -4,13 +4,16 @@
 
 #[macro_use]
 mod console;
-mod batch;
+mod counter;
 mod lang_items;
+mod loader;
 mod logger;
 mod sbi;
 mod sync;
 mod syscall;
 mod trap;
+mod tasks;
+mod config;
 
 use core::{arch::global_asm, usize};
 
@@ -46,10 +49,12 @@ pub fn rust_main() -> ! {
         skernel as usize,
         ekernel as usize,
     );
+
     clear_bss();
     trap::init();
-    batch::init();
-    batch::run_next_app();
+    loader::load_apps();
+    tasks::run_first_task();
+    panic!("Unreachable in rust_main!");
 }
 
 fn clear_bss() {

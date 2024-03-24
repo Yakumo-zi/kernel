@@ -35,7 +35,6 @@ __alltraps:
 
 
 __restore:
-  mv sp,a0
 
   ld t0, 32*8(sp)
   ld t1, 33*8(sp)

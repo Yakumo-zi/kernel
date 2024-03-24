@@ -7,7 +7,7 @@ const WARN: u8 = 93;
 const ERROR: u8 = 31;
 impl Log for Logger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
-        metadata.level() <= Level::Info
+        metadata.level() <= Level::Trace
     }
 
     fn log(&self, record: &log::Record) {
@@ -15,42 +15,37 @@ impl Log for Logger {
             match record.level() {
                 Level::Error => {
                     println!(
-                        "\x1b[{}m{}\x1b[{}m",
+                        "\x1b[{}m{}\x1b[0m",
                         ERROR,
-                        format_args!("[{:>5}] {}", record.level(), record.args()),
-                        ERROR
+                        format_args!("[{:>5}] {}", record.level(), record.args())
                     );
                 }
                 Level::Warn => {
                     println!(
-                        "\x1b[{}m{}\x1b[{}m",
+                        "\x1b[{}m{}\x1b[0m",
                         WARN,
-                        format_args!("[{:>5}] {}", record.level(), record.args()),
-                        WARN
+                        format_args!("[{:>5}] {}", record.level(), record.args())
                     );
                 }
                 Level::Info => {
                     println!(
-                        "\x1b[{}m{}\x1b[{}m",
+                        "\x1b[{}m{}\x1b[0m",
                         INFO,
-                        format_args!("[{:>5}] {}", record.level(), record.args()),
-                        INFO
+                        format_args!("[{:>5}] {}", record.level(), record.args())
                     );
                 }
                 Level::Debug => {
                     println!(
-                        "\x1b[{}m{}\x1b[{}m",
+                        "\x1b[{}m{}\x1b[0m",
                         DEBUG,
-                        format_args!("[{:>5}] {}", record.level(), record.args()),
-                        DEBUG
+                        format_args!("[{:>5}] {}", record.level(), record.args())
                     );
                 }
                 Level::Trace => {
                     println!(
-                        "\x1b[{}m{}\x1b[{}m",
+                        "\x1b[{}m{}\x1b[0m",
                         TRACE,
-                        format_args!("[{:>5}] {}", record.level(), record.args()),
-                        TRACE
+                        format_args!("[{:>5}] {}", record.level(), record.args())
                     );
                 }
             }
