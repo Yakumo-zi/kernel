@@ -1,8 +1,11 @@
 use core::arch::asm;
+pub const MAX_SYSCALL_NUM: usize = 256;
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
-const SYSCALL_GET_TASKINFO: usize = 88;
 const SYSCALL_YIELD: usize = 124;
+const SYSCALL_GET_TIME: usize = 169;
+const SYSCALL_TASKINFO: usize = 410;
+
 fn syscall(id: usize, args: [usize; 3]) -> isize {
     let mut ret: isize;
     unsafe {
@@ -16,17 +19,46 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
     }
     ret
 }
+
+pub fn sys_task_info(ts:*mut TaskInfo)->isize{
+    syscall(SYSCALL_TASKINFO, [ts as usize,0,0])
+}
 pub fn sys_write(fd: usize, buffer: &[u8]) -> isize {
     syscall(SYSCALL_WRITE, [fd, buffer.as_ptr() as usize, buffer.len()])
 }
 
 pub fn sys_exit(xstate: i32) -> isize {
-    syscall(SYSCALL_EXIT, [xstate as usize, 0, 0])
-}
-pub fn sys_get_taskinfo() -> isize {
-    syscall(SYSCALL_GET_TASKINFO, [0, 0, 0])
+    let ret = syscall(SYSCALL_EXIT, [xstate as usize, 0, 0]);
+    println!("[user] Task completion time {}", sys_get_time());
+    ret
 }
 
-pub fn sys_yiled() -> isize {
+pub fn sys_yield() -> isize {
     syscall(SYSCALL_YIELD, [0, 0, 0])
+}
+
+pub fn sys_get_time() -> isize {
+    syscall(SYSCALL_GET_TIME, [0, 0, 0])
+}
+
+#[derive(Clone, Copy,Debug)]
+pub struct SyscallInfo {
+    pub id: usize,
+    pub times: usize,
+}
+
+#[derive(Clone, Copy,Debug)]
+pub struct TaskInfo {
+    pub id: usize,
+    pub status: TaskStatus,
+    pub call: [SyscallInfo; MAX_SYSCALL_NUM],
+    pub time: usize,
+}
+
+#[derive(Clone, Copy, PartialEq,Debug)]
+pub enum TaskStatus {
+    UnInit,
+    Ready,
+    Running,
+    Exited,
 }

@@ -4,6 +4,7 @@
 
 #[macro_use]
 mod console;
+mod config;
 mod counter;
 mod lang_items;
 mod loader;
@@ -11,14 +12,16 @@ mod logger;
 mod sbi;
 mod sync;
 mod syscall;
-mod trap;
 mod tasks;
-mod config;
+mod timer;
+mod trap;
 
 use core::{arch::global_asm, usize};
 
+
 use crate::logger::Logger;
 
+static MY_LOGGER:Logger=Logger;
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
 
@@ -36,9 +39,8 @@ pub fn rust_main() -> ! {
         fn skernel();
         fn ekernel();
     }
-    log::set_logger(&Logger)
-        .map(|()| log::set_max_level(log::LevelFilter::Trace))
-        .unwrap();
+    log::set_logger(&MY_LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Trace);
 
     log::info!(".bss [{:#x}-{:#x}]", sbss as usize, ebss as usize);
     log::info!(".text [{:#x}-{:#x}]", stext as usize, etext as usize);
@@ -53,6 +55,8 @@ pub fn rust_main() -> ! {
     clear_bss();
     trap::init();
     loader::load_apps();
+    trap::enable_timer_interrupt();
+    timer::set_next_trigger();
     tasks::run_first_task();
     panic!("Unreachable in rust_main!");
 }

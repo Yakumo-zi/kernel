@@ -2,7 +2,6 @@ use core::arch::asm;
 
 use crate::trap::context::TrapContext;
 use crate::config::*;
-
 #[repr(align(4096))]
 #[derive(Copy, Clone)]
 struct KernelStack {

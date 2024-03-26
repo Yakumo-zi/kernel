@@ -1,7 +1,8 @@
 #![no_std]
 #![no_main]
 
-use user_lib::yiled_;
+use user_lib::yield_;
+
 
 #[macro_use]
 extern crate user_lib;
@@ -21,7 +22,7 @@ fn main() -> i32 {
         pow[index] = last * P % MOD;
         if i % 10000 == 0 {
             println!("{}^{}={}(MOD {})", P, i, pow[index], MOD);
-            yiled_();
+            yield_();
         }
     }
     println!("Test power OK!");

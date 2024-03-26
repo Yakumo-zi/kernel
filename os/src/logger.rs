@@ -5,6 +5,7 @@ const DEBUG: u8 = 32;
 const INFO: u8 = 34;
 const WARN: u8 = 93;
 const ERROR: u8 = 31;
+
 impl Log for Logger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
         metadata.level() <= Level::Trace
