@@ -26,6 +26,7 @@ lazy_static! {
             task_call_size: 0,
             kernel_time: 0,
             user_time: 0,
+            wake_up_time: 0,
         }; MAX_APP_NUM];
 
         for i in 0..num_app {
@@ -65,12 +66,20 @@ pub fn mark_current_exited_and_run_next() {
     mark_current_exited();
     run_next_task();
 }
+
+pub fn mark_current_sleep_and_run_next(wake_up_time: usize) {
+    mark_current_sleep(wake_up_time);
+    run_next_task();
+}
+
 pub fn run_first_task() {
     TASK_MANAGER.run_first_task()
 }
 pub fn record_task_info(syscall_id: usize) {
     TASK_MANAGER.record_task_info(syscall_id)
 }
+
+#[allow(unused)]
 pub fn get_current_task_info() -> TaskInfo {
     get_task_info(TASK_MANAGER.inner.exclusive_access().current_task)
 }
@@ -117,6 +126,14 @@ impl TaskManager {
         inner.tasks[current].task_status = TaskStatus::Ready;
         inner.tasks[current].kernel_time += inner.refresh_stop_watch();
     }
+    fn mark_current_sleep(&self, wake_up_time: usize) {
+        let mut inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].task_status = TaskStatus::Ready;
+        inner.tasks[current].kernel_time += inner.refresh_stop_watch();
+        inner.tasks[current].wake_up_time = wake_up_time;
+    }
+
     fn mark_current_exited(&self) {
         let mut inner = self.inner.exclusive_access();
         let current = inner.current_task;
@@ -164,6 +181,7 @@ impl TaskManager {
             let mut inner = self.inner.exclusive_access();
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
+            inner.tasks[next].wake_up_time = 0;
             inner.current_task = next;
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
             let next_task_cx_ptr: *const TaskContext =
@@ -180,9 +198,22 @@ impl TaskManager {
     fn find_next_task(&self) -> Option<usize> {
         let inner = self.inner.exclusive_access();
         let current = inner.current_task;
-        (current + 1..current + self.num_app + 1)
-            .map(|id| id % self.num_app)
-            .find(|id| inner.tasks[*id].task_status == TaskStatus::Ready)
+        let select_one = |i: usize| {
+            (current + i..current + self.num_app + i)
+                .map(|id| id % self.num_app)
+                .find(|id| inner.tasks[*id].task_status == TaskStatus::Ready)
+        };
+
+        let mut i = 1;
+        while let Some(task) = select_one(i) {
+            if get_time_ms() >= inner.tasks[task].wake_up_time {
+                return Some(task);
+            } else {
+                i += 1;
+                continue;
+            }
+        }
+        None
     }
 }
 fn mark_current_suspended() {
@@ -193,6 +224,9 @@ fn mark_current_exited() {
     TASK_MANAGER.mark_current_exited();
 }
 
+fn mark_current_sleep(wake_up_time: usize) {
+    TASK_MANAGER.mark_current_sleep(wake_up_time)
+}
 fn run_next_task() {
     TASK_MANAGER.run_next_task();
 }

@@ -1,7 +1,6 @@
 use crate::{
     tasks::{
-        get_task_info, mark_current_exited_and_run_next, mark_current_suspended_and_run_next,
-        TaskInfo,
+        get_task_info, mark_current_exited_and_run_next, mark_current_sleep_and_run_next, mark_current_suspended_and_run_next, TaskInfo
     },
     timer::get_time_ms,
 };
@@ -23,10 +22,13 @@ pub fn sys_yiled() -> isize {
 pub fn sys_get_time() -> isize {
     get_time_ms() as isize
 }
+pub fn sys_sleep(sec: usize) -> isize {
+    let wake_up_time = get_time_ms() + sec * 1000;
+    mark_current_sleep_and_run_next(wake_up_time);
+    0
+}
 pub fn sys_task_info(id: usize, ts: *mut TaskInfo) -> isize {
     let info = get_task_info(id);
-    unsafe {
-        (*ts)=info
-    }
+    unsafe { (*ts) = info }
     0
 }

@@ -13,6 +13,7 @@ pub fn set_next_trigger() {
     sbi::set_timer((get_time() + CLOCK_FREQ / TICKS_PER_SEC) as u64);
 }
 
+#[allow(unused)]
 pub fn get_time_us() -> usize {
     time::read() / (CLOCK_FREQ / MICRO_PER_SEC)
 }

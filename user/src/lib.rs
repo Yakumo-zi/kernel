@@ -43,10 +43,13 @@ pub fn exit(exit_code: i32) -> isize {
 pub fn get_taskinfo(ts:*mut TaskInfo) -> isize {
     sys_task_info(ts)
 }
-pub fn yield_() -> isize {
-    sys_yield()
+pub fn yield_() {
+    sys_yield();
 }
 
 pub fn get_time()->isize{
     sys_get_time()
+}
+pub fn sleep(sec:usize){
+    sys_sleep(sec);
 }

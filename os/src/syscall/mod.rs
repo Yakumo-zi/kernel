@@ -10,6 +10,7 @@ pub const SYSCALL_EXIT: usize = 93;
 pub const SYSCALL_TASKINFO: usize = 410;
 pub const SYSCALL_YIELD: usize = 124;
 pub const SYSCALL_GET_TIME: usize = 169;
+pub const SYSCALL_SLEEP: usize = 13;
 pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
     record_task_info(syscall_id);
     let current_task = get_current_task();
@@ -19,11 +20,12 @@ pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
         SYSCALL_TASKINFO => sys_task_info(current_task, args[0] as *mut TaskInfo),
         SYSCALL_YIELD => sys_yiled(),
         SYSCALL_GET_TIME => sys_get_time(),
+        SYSCALL_SLEEP => sys_sleep(args[0]),
         _ => panic!("Unsupported syscall_id: {}", syscall_id),
     }
 }
 
-#[derive(Clone, Copy,Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct SyscallInfo {
     pub id: usize,
     pub times: usize,

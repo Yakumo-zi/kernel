@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
+#![feature(alloc_error_handler)]
 
 #[macro_use]
 mod console;
@@ -9,6 +10,7 @@ mod counter;
 mod lang_items;
 mod loader;
 mod logger;
+mod mm;
 mod sbi;
 mod sync;
 mod syscall;
@@ -16,15 +18,14 @@ mod tasks;
 mod timer;
 mod trap;
 
-use core::{arch::global_asm, usize};
-
-
 use crate::logger::Logger;
+use core::{arch::global_asm, usize};
+extern crate alloc;
 
-static MY_LOGGER:Logger=Logger;
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
 
+static MY_LOGGER: Logger = Logger;
 #[no_mangle]
 pub fn rust_main() -> ! {
     extern "C" {
@@ -54,6 +55,8 @@ pub fn rust_main() -> ! {
 
     clear_bss();
     trap::init();
+    mm::init_heap();
+    // mm::heap_test();
     loader::load_apps();
     trap::enable_timer_interrupt();
     timer::set_next_trigger();

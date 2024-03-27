@@ -18,6 +18,7 @@ pub struct TaskControlBlock {
     pub task_call_size:usize,
     pub kernel_time:usize,
     pub user_time:usize,
+    pub wake_up_time:usize,
 }
 
 #[derive(Clone, Copy,Debug)]
