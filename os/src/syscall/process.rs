@@ -10,7 +10,7 @@ pub fn sys_exit(xstate: i32) -> ! {
     println!(
         "[kernel] Application exited with code {},Completion time {}",
         xstate,
-        sys_get_time()
+        get_time_ms()
     );
     mark_current_exited_and_run_next();
     panic!("Unreachable in sys_exit!");
@@ -26,10 +26,7 @@ pub fn sys_get_time() -> isize {
 pub fn sys_task_info(id: usize, ts: *mut TaskInfo) -> isize {
     let info = get_task_info(id);
     unsafe {
-        (*ts).id = info.id;
-        (*ts).status = info.status;
-        (*ts).time = info.time;
-        // (*ts).call = info.call.clone();
+        (*ts)=info
     }
     0
 }

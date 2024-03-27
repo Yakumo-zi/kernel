@@ -1,7 +1,8 @@
 use core::arch::global_asm;
 
 use riscv::register::{
-    scause::{self, Exception, Interrupt}, sie, stval, stvec
+    scause::{self, Exception, Interrupt},
+    sie, stval, stvec,
 };
 
 use crate::{
@@ -22,12 +23,15 @@ pub fn init() {
     }
 }
 
-pub fn enable_timer_interrupt(){
-     unsafe { sie::set_stimer(); }
+pub fn enable_timer_interrupt() {
+    unsafe {
+        sie::set_stimer();
+    }
 }
 
 #[no_mangle]
 pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
+    crate::tasks::user_time_end();
     let scause = scause::read();
     let stval = stval::read();
     match scause.cause() {
@@ -56,5 +60,6 @@ pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
             );
         }
     }
+    crate::tasks::user_time_start();
     cx
 }

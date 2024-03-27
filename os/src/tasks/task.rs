@@ -2,7 +2,7 @@ use crate::{config::MAX_SYSCALL_NUM, syscall::SyscallInfo};
 
 use super::TaskContext;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq,Debug)]
 pub enum TaskStatus {
     UnInit,
     Ready,
@@ -10,15 +10,17 @@ pub enum TaskStatus {
     Exited,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub struct TaskControlBlock {
     pub task_status: TaskStatus,
     pub task_cx: TaskContext,
     pub task_info: TaskInfo,
     pub task_call_size:usize,
+    pub kernel_time:usize,
+    pub user_time:usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub struct TaskInfo {
     pub id: usize,
     pub status: TaskStatus,

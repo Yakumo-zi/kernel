@@ -23,7 +23,7 @@ pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub struct SyscallInfo {
     pub id: usize,
     pub times: usize,
