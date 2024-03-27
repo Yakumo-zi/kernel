@@ -18,10 +18,13 @@ mod tasks;
 mod timer;
 mod trap;
 
-use crate::logger::Logger;
-use core::{arch::global_asm, usize};
+#[macro_use]
+extern crate bitflags;
+
 extern crate alloc;
 
+use crate::logger::Logger;
+use core::{arch::global_asm, usize};
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
 
@@ -56,6 +59,8 @@ pub fn rust_main() -> ! {
     clear_bss();
     trap::init();
     mm::init_heap();
+    mm::init_frame_allocator();
+    // mm::frame_allocator_test();
     // mm::heap_test();
     loader::load_apps();
     trap::enable_timer_interrupt();
